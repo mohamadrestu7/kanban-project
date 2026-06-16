@@ -33,6 +33,7 @@ class Board(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         nullable=False,
+        index=True,
     )
     title: Mapped[str] = mapped_column(String, nullable=False, default="My Board")
     created_at: Mapped[str] = mapped_column(String, server_default=func.current_timestamp())
@@ -59,6 +60,7 @@ class Column(Base):
         String,
         ForeignKey("boards.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
     position: Mapped[int] = mapped_column(nullable=False)
@@ -82,6 +84,7 @@ class Card(Base):
         String,
         ForeignKey("columns.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
     details: Mapped[str] = mapped_column(String, nullable=False, default="")
@@ -101,11 +104,13 @@ class Conversation(Base):
         String,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     board_id: Mapped[str] = mapped_column(
         String,
         ForeignKey("boards.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     role: Mapped[str] = mapped_column(String, nullable=False)
     message: Mapped[str] = mapped_column(String, nullable=False)

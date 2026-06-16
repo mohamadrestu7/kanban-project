@@ -1,0 +1,8 @@
+Requirement already satisfied: PyJWT in c:\users\moham\anaconda3\lib\site-packages (2.10.1)
+Collecting passlib>=1.7.0 (from passlib[bcrypt]>=1.7.0)
+  Downloading passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: bcrypt>=3.1.0 in c:\users\moham\anaconda3\lib\site-packages (from passlib[bcrypt]>=1.7.0) (5.0.0)
+Downloading passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+   ---------------------------------------- 525.6/525.6 kB 835.9 kB/s  0:00:00
+Installing collected packages: passlib
+Successfully installed passlib-1.7.4

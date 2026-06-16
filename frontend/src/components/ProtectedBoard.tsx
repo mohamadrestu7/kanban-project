@@ -3,11 +3,12 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { KanbanBoard } from "@/components/KanbanBoard";
 
 export const ProtectedBoard = () => {
   const router = useRouter();
-  const { isReady, isLoggedIn, username, logout } = useAuth();
+  const { isReady, isLoggedIn, username, userId, logout } = useAuth();
 
   useEffect(() => {
     if (isReady && !isLoggedIn) {
@@ -25,6 +26,14 @@ export const ProtectedBoard = () => {
     );
   }
 
-  return <KanbanBoard username={username ?? "user"} onLogout={logout} />;
+  return (
+    <ErrorBoundary>
+      <KanbanBoard
+        userId={userId ?? "user"}
+        username={username ?? "user"}
+        onLogout={logout}
+      />
+    </ErrorBoundary>
+  );
 };
 

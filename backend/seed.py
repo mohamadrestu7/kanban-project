@@ -1,4 +1,4 @@
-from hashlib import sha256
+import bcrypt as _bcrypt_lib
 
 from sqlalchemy.orm import Session
 
@@ -69,7 +69,11 @@ DEFAULT_CARDS = [
 
 
 def hash_password(password: str) -> str:
-    return sha256(password.encode("utf-8")).hexdigest()
+    return _bcrypt_lib.hashpw(password.encode("utf-8"), _bcrypt_lib.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return _bcrypt_lib.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def seed_default_data(session: Session) -> None:

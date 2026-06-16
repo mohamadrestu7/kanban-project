@@ -20,7 +20,7 @@ def test_default_board_loads_with_columns_and_cards(client):
     assert data["columns"][0]["cardIds"] == ["card-1", "card-2"]
 
 
-def test_create_user_creates_separate_empty_board(client):
+def test_create_user_creates_separate_empty_board(client, db_session):
     response = client.post(
         "/api/users",
         json={"username": "second", "password": "password"},
@@ -28,10 +28,12 @@ def test_create_user_creates_separate_empty_board(client):
 
     assert response.status_code == 201
     user = response.json()
-    board_response = client.get(f"/api/users/{user['id']}/board")
-
-    assert board_response.status_code == 200
-    assert board_response.json()["userId"] == user["id"]
+    # Verify a board was created in the DB for the new user
+    from models import Board
+    from sqlalchemy import select
+    board = db_session.scalar(select(Board).where(Board.user_id == user["id"]))
+    assert board is not None
+    assert board.user_id == user["id"]
 
 
 def test_duplicate_username_returns_400(client):

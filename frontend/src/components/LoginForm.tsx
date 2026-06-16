@@ -10,12 +10,17 @@ export const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!login(username, password)) {
-      setError("Use username user and password password.");
+    setIsSubmitting(true);
+    const ok = await login(username, password);
+    setIsSubmitting(false);
+
+    if (!ok) {
+      setError("Invalid username or password.");
       return;
     }
 
@@ -64,9 +69,10 @@ export const LoginForm = () => {
           )}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="h-12 rounded-xl bg-[var(--secondary-purple)] px-4 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-110"
           >
-            Sign in
+            {isSubmitting ? "Signing in" : "Sign in"}
           </button>
         </form>
       </section>

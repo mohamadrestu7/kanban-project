@@ -13,8 +13,8 @@ WORKDIR /app/backend
 # Copy Python requirements
 COPY backend/requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies (use uv per project standards)
+RUN pip install --no-cache-dir uv && uv pip install --system --no-cache -r requirements.txt
 
 # Copy backend code
 COPY backend/ .

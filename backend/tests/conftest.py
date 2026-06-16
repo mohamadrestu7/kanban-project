@@ -15,6 +15,8 @@ database = import_module("database")
 main = import_module("main")
 seed = import_module("seed")
 
+from models import User
+
 
 @pytest.fixture
 def db_session(tmp_path: Path) -> Generator[Session]:
@@ -47,7 +49,11 @@ def client(db_session: Session) -> Generator[TestClient]:
     def override_get_session():
         yield db_session
 
+    def override_get_current_user():
+        return db_session.get(User, seed.DEFAULT_USER_ID)
+
     main.app.dependency_overrides[database.get_session] = override_get_session
+    main.app.dependency_overrides[main.get_current_user] = override_get_current_user
     test_client = TestClient(main.app)
 
     try:

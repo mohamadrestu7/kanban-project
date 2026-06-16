@@ -2,14 +2,15 @@
 
 ## Current Status
 
-Last reviewed: 2026-05-11.
+Last reviewed: 2026-06-16.
 
-Parts 2 and 3 are implemented and verified through the Docker startup path. The Windows `scripts/start.bat` flow now builds the frontend, builds the Docker image, starts the container, waits for `/api/test`, and serves the Kanban frontend at `http://localhost:8000/`.
+Parts 2–6 are implemented and verified. Parts 7–10 are substantially implemented in modified/untracked files (not yet committed). The Windows `scripts/start.bat` flow builds the frontend, builds the Docker image, starts the container, waits for `/api/test`, and serves the Kanban frontend at `http://localhost:8000/`.
 
 ### Current Design Decisions
 
 - Use `docker compose` instead of the legacy `docker-compose` command in all start/stop scripts.
 - Keep the app as one Docker service for the MVP: FastAPI serves the API under `/api/*` and serves the static Next.js export at `/`.
+- Use `uv` in the Docker image to install Python dependencies from `backend/requirements.txt`.
 - Use Next.js static export with `output: 'export'` and `distDir: 'out'`, producing `frontend/out`.
 - FastAPI serves built frontend assets from `backend/public/out` inside the container.
 - The host start scripts run `npm ci` only when the local Next.js binary is missing, then run `npm run build` so `frontend/out` exists for the compose volume mount.
@@ -33,6 +34,7 @@ Parts 2 and 3 are implemented and verified through the Docker startup path. The 
 - Part 6 backend SQLite persistence and board CRUD API routes are implemented.
 - Part 6 backend tests pass, Python compile check passes, Ruff passes, and Docker runtime smoke tests pass.
 - Local backend dependencies were installed from `backend/requirements.txt` so pytest and Ruff can run locally.
+- Parts 7–10 are substantially implemented in modified/untracked files. Remaining gaps: 7.11 (per-operation loading spinners), 7.13 (backend logout call), 10.14 (input focus after send), and all Part 10 tests.
 
 ## Part 1: Planning & Architecture
 
@@ -434,19 +436,19 @@ Update frontend to use backend API instead of in-memory state. Persist all opera
 
 ### Substeps
 
-- [ ] **7.1 API client**: Create `lib/api.ts` with helper functions for backend calls
-- [ ] **7.2 Environment config**: Add `NEXT_PUBLIC_API_URL` env variable (default `http://localhost:8000`)
-- [ ] **7.3 Auth update**: Add POST `/api/login` endpoint to backend for authentication (hardcoded check)
-- [ ] **7.4 Auth refactor**: Update frontend auth context to call backend login instead of local validation
-- [ ] **7.5 Load board on mount**: Update KanbanBoard to fetch `/api/users/{userId}/board` on mount
-- [ ] **7.6 Add card sync**: Update addCard handler to POST to backend, then update state with response
-- [ ] **7.7 Delete card sync**: Update deleteCard handler to DELETE to backend first
-- [ ] **7.8 Move card sync**: Update moveCard handler to PATCH to backend with new column_id
-- [ ] **7.9 Rename column sync**: Update renameColumn handler to PUT to backend
-- [ ] **7.10 Error handling**: Display user-friendly error messages for failed API calls
-- [ ] **7.11 Loading states**: Show loading spinners during async operations
-- [ ] **7.12 Optimistic updates**: Update UI immediately, rollback on error
-- [ ] **7.13 Logout sync**: DELETE session on backend when user logs out
+- [x] **7.1 API client**: Create `lib/api.ts` with helper functions for backend calls
+- [x] **7.2 Environment config**: Add `NEXT_PUBLIC_API_URL` env variable (default `http://localhost:8000`)
+- [x] **7.3 Auth update**: Add POST `/api/login` endpoint to backend for authentication (hardcoded check)
+- [x] **7.4 Auth refactor**: Update frontend auth context to call backend login instead of local validation
+- [x] **7.5 Load board on mount**: Update KanbanBoard to fetch `/api/users/{userId}/board` on mount
+- [x] **7.6 Add card sync**: Update addCard handler to POST to backend, then update state with response
+- [x] **7.7 Delete card sync**: Update deleteCard handler to DELETE to backend first
+- [x] **7.8 Move card sync**: Update moveCard handler to PATCH to backend with new column_id
+- [x] **7.9 Rename column sync**: Update renameColumn handler to PUT to backend
+- [x] **7.10 Error handling**: Display user-friendly error messages for failed API calls
+- [ ] **7.11 Loading states**: Show loading spinners during async operations (board-level spinner only; no per-operation spinners)
+- [x] **7.12 Optimistic updates**: Update UI immediately, rollback on error
+- [ ] **7.13 Logout sync**: DELETE session on backend when user logs out (logout currently only clears localStorage)
 
 ### Tests
 
@@ -458,13 +460,13 @@ Update frontend to use backend API instead of in-memory state. Persist all opera
 
 **Integration Tests**
 
-- [ ] Login POST request with correct credentials succeeds
-- [ ] Login with wrong credentials fails
-- [ ] Board data loads from API on component mount
-- [ ] Adding card calls POST and updates state
-- [ ] Deleting card calls DELETE and removes from board
-- [ ] Moving card calls PATCH with correct column_id
-- [ ] Renaming column calls PUT and updates title
+- [x] Login POST request with correct credentials succeeds
+- [x] Login with wrong credentials fails
+- [x] Board data loads from API on component mount
+- [x] Adding card calls POST and updates state
+- [x] Deleting card calls DELETE and removes from board
+- [x] Moving card calls PATCH with correct column_id
+- [x] Renaming column calls PUT and updates title
 - [ ] Error message displays when API fails
 - [ ] Loading spinner shows during API calls
 
@@ -504,15 +506,15 @@ Set up OpenAI API connectivity, test with simple query, verify structured output
 
 ### Substeps
 
-- [ ] **8.1 OpenAI client**: Install `openai` Python package
-- [ ] **8.2 API key loading**: Load `OPENAI_API_KEY` from `.env` file
-- [ ] **8.3 Test endpoint**: Create `POST /api/ai/test` endpoint
-- [ ] **8.4 Simple query**: Test with "What is 2+2?" to verify basic connectivity
-- [ ] **8.5 Response parsing**: Parse OpenAI response and return JSON
-- [ ] **8.6 Error handling**: Handle API errors (rate limit, auth, network)
-- [ ] **8.7 Logging**: Log all AI requests/responses for debugging
-- [ ] **8.8 Timeout handling**: Set request timeout (30 seconds)
-- [ ] **8.9 Structured outputs**: Define JSON schema for AI to return structured responses
+- [x] **8.1 OpenAI client**: Install `openai` Python package
+- [x] **8.2 API key loading**: Load `OPENAI_API_KEY` from `.env` file
+- [x] **8.3 Test endpoint**: Create `POST /api/ai/test` endpoint
+- [x] **8.4 Simple query**: Test with "What is 2+2?" to verify basic connectivity
+- [x] **8.5 Response parsing**: Parse OpenAI response and return JSON
+- [x] **8.6 Error handling**: Handle API errors (rate limit, auth, network)
+- [x] **8.7 Logging**: Log all AI requests/responses for debugging
+- [x] **8.8 Timeout handling**: Set request timeout (30 seconds)
+- [x] **8.9 Structured outputs**: Define JSON schema for AI to return structured responses
 
 ### Tests
 
@@ -524,10 +526,10 @@ Set up OpenAI API connectivity, test with simple query, verify structured output
 
 **Integration Tests**
 
-- [ ] POST `/api/ai/test` with prompt returns JSON response
-- [ ] Response contains correct answer to "2+2=4"
-- [ ] Missing API key returns clear error message
-- [ ] Timeout after 30 seconds (use mock)
+- [x] POST `/api/ai/test` with prompt returns JSON response
+- [x] Response contains correct answer to "2+2=4"
+- [x] Missing API key returns clear error message
+- [x] Timeout after 30 seconds (use mock)
 - [ ] Rate limit error handled gracefully
 
 **Manual Tests**
@@ -556,7 +558,7 @@ Extend AI to receive full Kanban board state with user query, return structured 
 
 ### Substeps
 
-- [ ] **9.1 Structured output schema**: Define JSON schema for AI response:
+- [x] **9.1 Structured output schema**: Define JSON schema for AI response:
   ```json
   {
     "message": "string",
@@ -566,36 +568,36 @@ Extend AI to receive full Kanban board state with user query, return structured 
     }
   }
   ```
-- [ ] **9.2 Board state serialization**: Function to convert Board ORM to JSON for AI context
-- [ ] **9.3 Conversation history table**: Store message history for context window
-- [ ] **9.4 System prompt**: Create detailed system prompt explaining Kanban format and expected responses
-- [ ] **9.5 Chat endpoint**: Create `POST /api/ai/chat` endpoint
-  - [ ] Accept `user_id`, `message`, `board_id`
-  - [ ] Load conversation history from DB
-  - [ ] Include full board state in request
-  - [ ] Call OpenAI with structured outputs
-  - [ ] Parse response and return JSON
-  - [ ] Store user message and AI response in history
-- [ ] **9.6 Board update handling**: Parse AI's suggested board updates, validate, but don't apply yet (UI decides)
-- [ ] **9.7 Error recovery**: Handle malformed AI responses gracefully
+- [x] **9.2 Board state serialization**: Function to convert Board ORM to JSON for AI context
+- [x] **9.3 Conversation history table**: Store message history for context window
+- [x] **9.4 System prompt**: Create detailed system prompt explaining Kanban format and expected responses
+- [x] **9.5 Chat endpoint**: Create `POST /api/ai/chat` endpoint
+  - [x] Accept `user_id`, `message`, `board_id`
+  - [x] Load conversation history from DB
+  - [x] Include full board state in request
+  - [x] Call OpenAI with structured outputs
+  - [x] Parse response and return JSON
+  - [x] Store user message and AI response in history
+- [x] **9.6 Board update handling**: Parse AI's suggested board updates, validate, but don't apply yet (UI decides)
+- [x] **9.7 Error recovery**: Handle malformed AI responses gracefully
 
 ### Tests
 
 **Unit Tests**
 
-- [ ] Board state serializes correctly to JSON
-- [ ] Conversation history loads in correct order
-- [ ] System prompt contains required instructions
-- [ ] Structured output parsing works for valid responses
+- [x] Board state serializes correctly to JSON
+- [x] Conversation history loads in correct order
+- [x] System prompt contains required instructions
+- [x] Structured output parsing works for valid responses
 
 **Integration Tests**
 
-- [ ] POST `/api/ai/chat` with simple question returns response
-- [ ] Response includes "message" field
-- [ ] Conversation history is saved to DB
-- [ ] Multiple chat turns maintain context
+- [x] POST `/api/ai/chat` with simple question returns response
+- [x] Response includes "message" field
+- [x] Conversation history is saved to DB
+- [x] Multiple chat turns maintain context
 - [ ] Board updates in response match valid card/column operations
-- [ ] Invalid AI response (malformed JSON) returns error without crash
+- [x] Invalid AI response (malformed JSON) returns error without crash
 - [ ] Different users have separate conversation histories
 
 **Manual Tests**
@@ -624,19 +626,19 @@ Add beautiful AI chat sidebar to UI. Allow user to apply AI-suggested board upda
 
 ### Substeps
 
-- [ ] **10.1 Sidebar layout**: Add sidebar container to main layout (split view with board and chat)
-- [ ] **10.2 Chat component**: Create `ChatSidebar.tsx` component with message list and input
-- [ ] **10.3 Message styling**: Style chat messages (user vs assistant, timestamp, code blocks)
-- [ ] **10.4 Input form**: Add message input field with send button (Enter to send)
-- [ ] **10.5 Scroll behavior**: Auto-scroll to latest message
-- [ ] **10.6 Loading state**: Show loading indicator while waiting for AI response
-- [ ] **10.7 Error display**: Show error messages in chat if request fails
-- [ ] **10.8 Message history**: Load previous conversation on component mount
-- [ ] **10.9 Board updates preview**: Display suggested board changes in chat for user review
-- [ ] **10.10 Apply updates**: Add "Apply Changes" button to accept AI suggestions
-- [ ] **10.11 Reject updates**: Allow user to dismiss suggestions without applying
-- [ ] **10.12 Live sync**: When updates applied, refresh board state from backend
-- [ ] **10.13 Responsive design**: Sidebar collapses on mobile
+- [x] **10.1 Sidebar layout**: Add sidebar container to main layout (split view with board and chat)
+- [x] **10.2 Chat component**: Create `ChatSidebar.tsx` component with message list and input
+- [x] **10.3 Message styling**: Style chat messages (user vs assistant, timestamp, code blocks)
+- [x] **10.4 Input form**: Add message input field with send button (Enter to send)
+- [x] **10.5 Scroll behavior**: Auto-scroll to latest message
+- [x] **10.6 Loading state**: Show loading indicator while waiting for AI response
+- [x] **10.7 Error display**: Show error messages in chat if request fails
+- [x] **10.8 Message history**: Load previous conversation on component mount
+- [x] **10.9 Board updates preview**: Display suggested board changes in chat for user review
+- [x] **10.10 Apply updates**: Add "Apply Changes" button to accept AI suggestions
+- [x] **10.11 Reject updates**: Allow user to dismiss suggestions without applying
+- [x] **10.12 Live sync**: When updates applied, refresh board state from backend
+- [x] **10.13 Responsive design**: Sidebar collapses on mobile
 - [ ] **10.14 Focus management**: Focus input field after sending message
 
 ### Tests
